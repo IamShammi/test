@@ -7,22 +7,24 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                echo 'Cloning repository...'
-                checkout scm
-            }
-        }
+       stage('Checkout') {
+    steps {
+        echo 'Cloning repository...'
+        git branch: 'main',
+            url: 'git@github.com:IamShammi/test.git',
+            credentialsId: 'github-ssh'
+    }
+}
 
-        stage('Build Java App') {
-            steps {
-                dir("${APP_DIR}") {
-                    echo 'Building Spring Boot application...'
-                    sh 'mvn clean package -DskipTests'
-                }
-            }
+       stage('Build Java App') {
+    steps {
+        dir("${APP_DIR}") {
+            echo 'Building Spring Boot application...'
+            sh 'chmod +x mvnw || true'
+            sh './mvnw clean package -DskipTests || mvn clean package -DskipTests'
         }
-
+    }
+}
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
@@ -39,9 +41,11 @@ pipeline {
 
         stage('Verify Application') {
             steps {
+                 dir('terraform') {
                 echo 'Checking running containers...'
                 sh 'docker ps'
                 echo 'App should be reachable at http://localhost:8080'
+            }
             }
         }
     }
