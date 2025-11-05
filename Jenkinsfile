@@ -71,25 +71,28 @@ stage('Push Image to DockerHub') {
             }
         }
 
-        stage('Terraform Deploy to AWS') {
-            environment {
-                AWS_CREDENTIALS = credentials('aws-creds')
-            }
-            steps {
-                dir("${TF_DIR}") {
-                    echo '🚀 Deploying app to AWS EC2 using Terraform...'
-                    sh '''
-                        export AWS_ACCESS_KEY_ID=$AWS_CREDENTIALS_USR
-                        export AWS_SECRET_ACCESS_KEY=$AWS_CREDENTIALS_PSW
-                        export AWS_DEFAULT_REGION=us-east-1
+stage('Terraform Deploy to AWS') {
+  environment {
+    AWS_CREDENTIALS = credentials('aws-creds')   // ID must match
+  }
+  steps {
+    dir("${TF_DIR}") {
+        sh '''
+  echo "AWS_ACCESS_KEY_ID=${AWS_CREDENTIALS_USR:0:4}******"
+  echo "AWS_SECRET_ACCESS_KEY=${AWS_CREDENTIALS_PSW:0:4}******"
+  aws sts get-caller-identity || true
+'''
+      sh '''
+         export AWS_ACCESS_KEY_ID=$AWS_CREDENTIALS_USR
+        export AWS_SECRET_ACCESS_KEY=$AWS_CREDENTIALS_PSW
+        export AWS_DEFAULT_REGION=us-east-1
 
-                        terraform init -input=false
-                        terraform plan -out=tfplan -input=false
-                        terraform apply -auto-approve tfplan
-                    '''
-                }
-            }
-        }
+        terraform init -input=false
+        terraform plan -out=tfplan -input=false
+      '''
+    }
+  }
+}
 
         stage('Post-Deployment Info') {
             steps {
