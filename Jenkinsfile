@@ -33,7 +33,7 @@ pipeline {
         stage('Run Docker Compose') {
             steps {
                 echo 'Starting all containers using Docker Compose...'
-                sh 'docker-compose up -d --build'
+                sh 'docker compose up -d --build'
             }
         }
 
