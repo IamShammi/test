@@ -27,7 +27,7 @@ pipeline {
                 dir("${APP_DIR}") {
                     echo 'Building Spring Boot application...'
                     sh 'chmod +x mvnw || true'
-                   sh 'mvn clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=5'
+                    sh 'mvn clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=5'
                 }
             }
         }
@@ -35,7 +35,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-             sh "docker build -t ${DOCKERHUB_REPO}:latest ${APP_DIR}"
+                sh "docker build -t ${DOCKERHUB_REPO}:latest ${APP_DIR}"
             }
         }
 
@@ -46,18 +46,18 @@ pipeline {
             }
         }
 
-stage('Push Image to DockerHub') {
-    environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-    }
-    steps {
-        echo '⬆️ Pushing image to DockerHub...'
-        sh '''
-            echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
-            docker push shammisepala/expenses-api:latest
-        '''
-    }
-}
+        stage('Push Image to DockerHub') {
+            environment {
+                DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+            }
+            steps {
+                echo '⬆️ Pushing image to DockerHub...'
+                sh '''
+                    echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
+                    docker push shammisepala/expenses-api:latest
+                '''
+            }
+        }
 
         stage('Run Docker Compose (Local Verification)') {
             steps {
@@ -71,23 +71,23 @@ stage('Push Image to DockerHub') {
             }
         }
 
-stage('Terraform Deploy to AWS') {
-    steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                          credentialsId: 'aws-creds']]) {
-            dir("${TF_DIR}") {
-                echo '🚀 Deploying app to AWS EC2 using Terraform...'
-                sh '''
-                    export AWS_DEFAULT_REGION=us-east-1
-
-                    terraform init -input=false
-                    terraform plan -out=tfplan -input=false
-                    terraform apply -auto-approve tfplan
-                '''
+        stage('Terraform Deploy to AWS') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: 'aws-creds']]) {
+                    dir("${TF_DIR}") {
+                        echo '🚀 Deploying app to AWS EC2 using Terraform...'
+                        sh '''
+                            export AWS_DEFAULT_REGION=us-east-1
+                            terraform init -input=false
+                            terraform plan -out=tfplan -input=false
+                            terraform apply -auto-approve tfplan
+                        '''
+                    }
+                }
             }
         }
-    }
-}
+
         stage('Post-Deployment Info') {
             steps {
                 dir("${TF_DIR}") {
@@ -101,23 +101,25 @@ stage('Terraform Deploy to AWS') {
             when {
                 expression { return params.DESTROY_INFRA == true }
             }
-           environment {
-    AWS_ACCESS_KEY_ID     = credentials('aws-creds').getAccessKey()
-    AWS_SECRET_ACCESS_KEY = credentials('aws-creds').getSecretKey()
-}
-steps {
-    dir("${TF_DIR}") {
-        echo '🔥 Destroying AWS infrastructure...'
-        sh '''
-            terraform destroy -auto-approve
-        '''
-    }
-}
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: 'aws-creds']]) {
+                    dir("${TF_DIR}") {
+                        echo '🔥 Destroying AWS infrastructure...'
+                        sh '''
+                            export AWS_DEFAULT_REGION=us-east-1
+                            terraform destroy -auto-approve
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Verify Application') {
             steps {
                 echo 'Checking running containers...'
                 sh 'docker ps'
-                echo 'App should be reachable at http://localhost:8080'
+                echo '✅ App should be reachable at http://localhost:8080'
             }
         }
     }
