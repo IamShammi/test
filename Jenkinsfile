@@ -36,13 +36,30 @@ stage('Clean Old Containers') {
         sh 'docker ps -aq --filter "name=expenses" | xargs -r docker rm -f'
     }
 }
-
-stage('Run Docker Compose') {
-    steps {
-        echo 'Starting all containers using Docker Compose...'
-        sh 'docker compose up -d --build'
-    }
-}
+stage('Push Image to DockerHub') {
+            environment {
+                DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')  // Jenkins credential ID
+            }
+            steps {
+                echo '⬆️ Pushing image to DockerHub...'
+                sh '''
+                    echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
+                    docker tag ${IMAGE_NAME}:latest ${DOCKERHUB_REPO}:latest
+                    docker push ${DOCKERHUB_REPO}:latest
+                '''
+            }
+        }
+stage('Run Docker Compose (Local Verification)') {
+            steps {
+                echo '🧩 Running app locally for verification...'
+                sh '''
+                    docker-compose down || true
+                    docker-compose up -d --build
+                    sleep 10
+                    docker ps
+                '''
+            }
+        }
 stage('Terraform Deploy to AWS') {
      steps {
             dir("${TF_DIR}") {
@@ -61,6 +78,23 @@ stage('Terraform Deploy to AWS') {
                 dir("${TF_DIR}") {
                     echo '🌍 Fetching deployment details...'
                     sh 'terraform output'
+                }
+            }
+        }
+    }
+
+        stage('Terraform Destroy (Cleanup)') {
+            when {
+                expression {
+                    return params.DESTROY_INFRA == true
+                }
+            }
+            steps {
+                dir("${TF_DIR}") {
+                    echo '🔥 Destroying AWS infrastructure...'
+                    sh '''
+                        terraform destroy -auto-approve
+                    '''
                 }
             }
         }
