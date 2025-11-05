@@ -37,18 +37,18 @@ stage('Clean Old Containers') {
     }
 }
 stage('Push Image to DockerHub') {
-            environment {
-                DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')  // Jenkins credential ID
-            }
-            steps {
-                echo '⬆️ Pushing image to DockerHub...'
-                sh '''
-                    echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
-                    docker tag ${IMAGE_NAME}:latest ${DOCKERHUB_REPO}:latest
-                    docker push ${DOCKERHUB_REPO}:latest
-                '''
-            }
-        }
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+    }
+    steps {
+        echo '⬆️ Pushing image to DockerHub...'
+        sh '''
+            echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
+            docker tag ${IMAGE_NAME}:latest ${DOCKERHUB_REPO}:latest
+            docker push ${DOCKERHUB_REPO}:latest
+        '''
+    }
+}
 stage('Run Docker Compose (Local Verification)') {
             steps {
                 echo '🧩 Running app locally for verification...'
