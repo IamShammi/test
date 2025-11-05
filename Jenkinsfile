@@ -4,7 +4,8 @@ pipeline {
     environment {
         APP_DIR = 'java-expenses'
         IMAGE_NAME = 'expenses-api'
-        DOCKERHUB_REPO = 'shammisepala/expenses-api' 
+        DOCKERHUB_REPO = 'shammisepala/expenses-api'  
+        TF_DIR = 'terraform'
     }
 
     stages {
