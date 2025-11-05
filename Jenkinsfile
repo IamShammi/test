@@ -35,7 +35,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                sh "docker build -t ${IMAGE_NAME} ${APP_DIR}"
+             sh "docker build -t ${DOCKERHUB_REPO}:latest ${APP_DIR}"
             }
         }
 
