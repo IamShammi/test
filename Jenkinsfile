@@ -46,7 +46,7 @@ pipeline {
             }
         }
 
-      stage('Push Image to DockerHub') {
+stage('Push Image to DockerHub') {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
     }
@@ -54,7 +54,6 @@ pipeline {
         echo '⬆️ Pushing image to DockerHub...'
         sh '''
             echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
-            docker tag expenses-api:latest shammisepala/expenses-api:latest
             docker push shammisepala/expenses-api:latest
         '''
     }
