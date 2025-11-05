@@ -43,6 +43,29 @@ stage('Run Docker Compose') {
         sh 'docker compose up -d --build'
     }
 }
+stage('Terraform Deploy to AWS') {
+     steps {
+            dir("${TF_DIR}") {
+                    echo '🚀 Deploying application to AWS EC2 using Terraform...'
+                    sh '''
+                        terraform init -input=false
+                        terraform plan -out=tfplan -input=false
+                        terraform apply -auto-approve tfplan
+                    '''
+                }
+            }
+        }
+
+        stage('Post-Deployment Info') {
+            steps {
+                dir("${TF_DIR}") {
+                    echo '🌍 Fetching deployment details...'
+                    sh 'terraform output'
+                }
+            }
+        }
+    }
+
 
         stage('Verify Application') {
             steps {
