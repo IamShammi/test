@@ -7,15 +7,7 @@ pipeline {
     }
 
     stages {
-       stage('Checkout') {
-    steps {
-        echo 'Cloning repository...'
-        git branch: 'main',
-            url: 'git@github.com:IamShammi/test.git',
-            credentialsId: 'github-ssh'
-    }
-}
-
+    
        stage('Build Java App') {
     steps {
         dir("${APP_DIR}") {
