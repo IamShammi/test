@@ -27,7 +27,7 @@ pipeline {
                 dir("${APP_DIR}") {
                     echo 'Building Spring Boot application...'
                     sh 'chmod +x mvnw || true'
-                    sh './mvnw clean package -DskipTests || mvn clean package -DskipTests'
+                   sh './mvnw clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=5'
                 }
             }
         }
