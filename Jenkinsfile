@@ -9,6 +9,12 @@ pipeline {
     stages {
     
        stage('Build Java App') {
+            agent {
+                docker {
+                    image 'maven:3.9.9-eclipse-temurin-17'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
     steps {
         dir("${APP_DIR}") {
             echo 'Building Spring Boot application...'
