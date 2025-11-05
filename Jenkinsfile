@@ -23,19 +23,26 @@ pipeline {
         }
     }
 }
-        stage('Build Docker Image') {
-            steps {
-                echo 'Building Docker image...'
-                sh "docker build -t ${IMAGE_NAME} ${APP_DIR}"
-            }
-        }
+       stage('Build Docker Image') {
+    steps {
+        echo 'Building Docker image...'
+        sh "docker build -t ${IMAGE_NAME} ${APP_DIR}"
+    }
+}
 
-        stage('Run Docker Compose') {
-            steps {
-                echo 'Starting all containers using Docker Compose...'
-                sh 'docker compose up -d --build'
-            }
-        }
+stage('Clean Old Containers') {
+    steps {
+        echo 'Cleaning up old containers...'
+        sh 'docker ps -aq --filter "name=expenses" | xargs -r docker rm -f'
+    }
+}
+
+stage('Run Docker Compose') {
+    steps {
+        echo 'Starting all containers using Docker Compose...'
+        sh 'docker compose up -d --build'
+    }
+}
 
         stage('Verify Application') {
             steps {
