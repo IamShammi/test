@@ -68,18 +68,24 @@ stage('Run Docker Compose (Local Verification)') {
             }
         }
 stage('Terraform Deploy to AWS') {
-     steps {
-            dir("${TF_DIR}") {
-                    echo '🚀 Deploying application to AWS EC2 using Terraform...'
-                    sh '''
-                        terraform init -input=false
-                        terraform plan -out=tfplan -input=false
-                        terraform apply -auto-approve tfplan
-                    '''
-                }
-            }
-        }
+    environment {
+        AWS_CREDENTIALS = credentials('aws-creds')
+    }
+    steps {
+        dir("${TF_DIR}") {
+            echo '🚀 Deploying app to AWS EC2 using Terraform...'
+            sh '''
+                export AWS_ACCESS_KEY_ID=$AWS_CREDENTIALS_USR
+                export AWS_SECRET_ACCESS_KEY=$AWS_CREDENTIALS_PSW
+                export AWS_DEFAULT_REGION=us-east-1
 
+                terraform init -input=false
+                terraform plan -out=tfplan -input=false
+                terraform apply -auto-approve tfplan
+            '''
+        }
+    }
+}
         stage('Post-Deployment Info') {
             steps {
                 dir("${TF_DIR}") {
