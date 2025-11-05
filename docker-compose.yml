@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: expenses-postgres
     environment:
-      POSTGRES_DB: expensedb
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: expensesdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
     ports:
       - "5432:5432"
     volumes:
@@ -23,6 +23,23 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - expenses-network
+
+  expenses-api:
+    build: ./java-expenses
+    container_name: expenses-api
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/expensesdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
     networks:
       - expenses-network
 
