@@ -1,3 +1,8 @@
+properties([
+    parameters([
+        booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Destroy AWS infra after run?')
+    ])
+])
 pipeline {
     agent any
 
