@@ -46,19 +46,19 @@ pipeline {
             }
         }
 
-        stage('Push Image to DockerHub') {
-            environment {
-                DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
-            }
-            steps {
-                echo '⬆️ Pushing image to DockerHub...'
-                sh '''
-                    echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
-                    docker tag ${IMAGE_NAME}:latest ${DOCKERHUB_REPO}:latest
-                    docker push ${DOCKERHUB_REPO}:latest
-                '''
-            }
-        }
+      stage('Push Image to DockerHub') {
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+    }
+    steps {
+        echo '⬆️ Pushing image to DockerHub...'
+        sh '''
+            echo "$DOCKERHUB_CREDENTIALS_PSW" | docker login -u "$DOCKERHUB_CREDENTIALS_USR" --password-stdin
+            docker tag expenses-api:latest shammisepala/expenses-api:latest
+            docker push shammisepala/expenses-api:latest
+        '''
+    }
+}
 
         stage('Run Docker Compose (Local Verification)') {
             steps {
