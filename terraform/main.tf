@@ -88,7 +88,7 @@ resource "aws_instance" "app_server" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t3.micro"
 
-  key_name = "my-key" # <- Make sure this key pair exists in AWS EC2 (us-east-1)
+  key_name = "test-keypair" # <- Make sure this key pair exists in AWS EC2 (us-east-1)
 
   vpc_security_group_ids = [aws_security_group.app_sg.id]
 
