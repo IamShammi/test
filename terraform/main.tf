@@ -92,7 +92,7 @@ resource "aws_instance" "app_server" {
               
               # Clone repo - hardcoded
               cd /home/ec2-user
-              git clone https://github.com/example/expenses-api.git
+              git clone https://github.com/IamShammi/test.git
               cd expenses-api
               
               # Start containers
