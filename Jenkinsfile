@@ -96,23 +96,26 @@ stage('Terraform Deploy to AWS') {
         }
     }
 
-        stage('Terraform Destroy (Cleanup)') {
-            when {
-                expression {
-                    return params.DESTROY_INFRA == true
-                }
-            }
-            steps {
-                dir("${TF_DIR}") {
-                    echo '🔥 Destroying AWS infrastructure...'
-                    sh '''
-                        terraform destroy -auto-approve
-                    '''
-                }
-            }
+ stage('Terraform Destroy (Cleanup)') {
+    when {
+        expression { return params.DESTROY_INFRA == true }
+    }
+    environment {
+        AWS_CREDENTIALS = credentials('aws-creds')
+    }
+    steps {
+        dir("${TF_DIR}") {
+            echo '🔥 Destroying AWS infrastructure...'
+            sh '''
+                export AWS_ACCESS_KEY_ID=$AWS_CREDENTIALS_USR
+                export AWS_SECRET_ACCESS_KEY=$AWS_CREDENTIALS_PSW
+                export AWS_DEFAULT_REGION=us-east-1
+
+                terraform destroy -auto-approve
+            '''
         }
     }
-
+}
 
         stage('Verify Application') {
             steps {
